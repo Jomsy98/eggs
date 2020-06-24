@@ -1,0 +1,54 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v1"
+    },
+    "exported_at": "2020-06-23T22:41:46-04:00",
+    "name": "The Isle",
+    "author": "james@poni.tech",
+    "description": "The Isle is an open beta with an open-world survival game where players choose from three factions in an attempt to survive a fierce island. Hunt. Prey. Survive.",
+    "image": "quay.io\/ngloader\/wine-steam:ubuntu_steamcmd-wine",
+    "startup": "wine .\\\/TheIsleServer.exe \/Game\/{{SERVER_MAP}}?MultiHome=0.0.0.0?Port={{SERVER_PORT}}?QueryPort={{SERVER_PORT}}?MaxPlayers={{MAX_PLAYERS}}?game={{SERVER_GAMEMODE}} -log",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"LogGameMode: Display: Match State Changed from WaitingToStart to InProgress\",\r\n    \"userInteraction\": []\r\n}",
+        "logs": "{\r\n    \"custom\": false,\r\n    \"location\": \"TheIsle\/Saved\/Logs\/TheIsle.log\"\r\n}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# The Isle Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\napt -y update\r\napt -y --no-install-recommends install curl lib32gcc1 ca-certificates wine-stable\r\n\r\ncd \/tmp\r\ncurl -sSL -o steamcmd.tar.gz http:\/\/media.steampowered.com\/installer\/steamcmd_linux.tar.gz\r\n\r\nmkdir -p \/mnt\/server\/steamcmd\r\ntar -xzvf steamcmd.tar.gz -C \/mnt\/server\/steamcmd\r\ncd \/mnt\/server\/steamcmd\r\n\r\n# SteamCMD fails otherwise for some reason, even running as root.\r\n# This is changed at the end of the install process anyways.\r\nchown -R root:root \/mnt\r\n\r\nexport HOME=\/mnt\/server\r\n.\/steamcmd.sh +@sSteamCmdForcePlatformType windows +login anonymous +force_install_dir \/mnt\/server +app_update 412680 +quit\r\n\r\n\r\n# Creating needed default files for the game\r\ncd \/mnt\/server\r\necho '\r\n-- [PLEASE NOTE]\r\n-- The Isle does not have full support for linux server hosting, because of this reason this server will have LIMITED SUPPORT\r\n-- any update could break the server and prevent it from running.\r\n--\r\n-- You can find information on The Isle server settings and config here: https:\/\/isle.fandom.com\/wiki\/The_Isle_Server_Settings_and_Configuration\r\n\r\n\r\n' > readme.txt\r\n\r\ncd TheIsle\/Saved\/Config\/WindowsServer\r\necho '\r\n[\/script\/theisle.igamesession]\r\nServerName=My Cool Server\r\nbFamilySharing=true\r\nbServerGlobalChat=true\r\nbServerNameTags=true\r\nbServerExperimental=true\r\nServerAIMax=300\r\nServerAIRate=20.0\r\nbServerAIPlayerSpawns=true\r\nbServerGrowth=false\r\nbServerFallDamage=false\r\nbServerAllowReplayRecording=true\r\nServerRespawnTime=0\r\nServerLogoutTime=0\r\nServerDiscord=\r\nServerAdmins=\r\nBannedUsers=(UserName=\"\",UniqueID=\"\")\r\n\r\n[\/script\/theisle.igamemode]\r\nDisabledDinosaurs=\r\nProgressionOverrides=(Row=\"\",Points=0)\r\nServerStartingTime=1350\r\nbServerDynamicTimeOfDay=1\r\nServerDayLength=60\r\n' > Game.ini",
+            "container": "alpine:3.4",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Map",
+            "description": "Choose which map you want to start by default.",
+            "env_variable": "SERVER_MAP",
+            "default_value": "TheIsle\/Maps\/Landscape3\/Isle_V3",
+            "user_viewable": 1,
+            "user_editable": 1,
+            "rules": "required|string"
+        },
+        {
+            "name": "Max Players",
+            "description": "Change the amount of max players.",
+            "env_variable": "MAX_PLAYERS",
+            "default_value": "50",
+            "user_viewable": 1,
+            "user_editable": 1,
+            "rules": "required|numeric"
+        },
+        {
+            "name": "Gamemode",
+            "description": "Change the gamemode of the server.",
+            "env_variable": "SERVER_GAMEMODE",
+            "default_value": "survival",
+            "user_viewable": 1,
+            "user_editable": 1,
+            "rules": "required|string|max:10"
+        }
+    ]
+}
